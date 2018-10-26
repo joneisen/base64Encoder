@@ -69,7 +69,7 @@ Begin Window winMain
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   77
+      Top             =   148
       Transparent     =   False
       Underline       =   False
       UseFocusRing    =   True
@@ -96,7 +96,7 @@ Begin Window winMain
       TabIndex        =   1
       TabPanelIndex   =   0
       TabStop         =   True
-      Top             =   77
+      Top             =   148
       Transparent     =   False
       Visible         =   True
       Width           =   216
@@ -124,13 +124,13 @@ Begin Window winMain
       TabIndex        =   2
       TabPanelIndex   =   0
       TabStop         =   True
-      Text            =   "1: Drag and drop desired files here:"
+      Text            =   "Drag and drop desired files here:"
       TextAlign       =   1
       TextColor       =   &c00000000
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   45
+      Top             =   116
       Transparent     =   False
       Underline       =   False
       Visible         =   True
@@ -165,7 +165,7 @@ Begin Window winMain
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   45
+      Top             =   116
       Transparent     =   False
       Underline       =   False
       Visible         =   True
@@ -197,7 +197,7 @@ Begin Window winMain
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   289
+      Top             =   360
       Transparent     =   False
       Underline       =   False
       Visible         =   True
@@ -229,7 +229,7 @@ Begin Window winMain
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   289
+      Top             =   360
       Transparent     =   False
       Underline       =   False
       Visible         =   True
@@ -261,16 +261,121 @@ Begin Window winMain
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   289
+      Top             =   360
       Transparent     =   False
       Underline       =   False
       Visible         =   True
       Width           =   200
    End
+   Begin Label lblOutputSelector
+      AutoDeactivate  =   True
+      Bold            =   False
+      DataField       =   ""
+      DataSource      =   ""
+      Enabled         =   True
+      Height          =   20
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Italic          =   False
+      Left            =   184
+      LockBottom      =   False
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   False
+      LockTop         =   True
+      Multiline       =   False
+      Scope           =   2
+      Selectable      =   False
+      TabIndex        =   7
+      TabPanelIndex   =   0
+      TabStop         =   True
+      Text            =   "Output Format:"
+      TextAlign       =   1
+      TextColor       =   &c00000000
+      TextFont        =   "System"
+      TextSize        =   0.0
+      TextUnit        =   0
+      Top             =   20
+      Transparent     =   False
+      Underline       =   False
+      Visible         =   True
+      Width           =   232
+   End
+   Begin PopupMenu puFormat
+      AutoDeactivate  =   True
+      Bold            =   False
+      DataField       =   ""
+      DataSource      =   ""
+      Enabled         =   True
+      Height          =   20
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      InitialValue    =   "CSV\nJSON\nXML"
+      Italic          =   False
+      Left            =   260
+      ListIndex       =   0
+      LockBottom      =   False
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   False
+      LockTop         =   True
+      Scope           =   2
+      TabIndex        =   8
+      TabPanelIndex   =   0
+      TabStop         =   True
+      TextFont        =   "System"
+      TextSize        =   0.0
+      TextUnit        =   0
+      Top             =   52
+      Transparent     =   False
+      Underline       =   False
+      Visible         =   True
+      Width           =   80
+   End
 End
 #tag EndWindow
 
 #tag WindowCode
+	#tag Method, Flags = &h21
+		Private Sub AppendToOutput(name as string, data as String)
+		  Select Case outputFormat
+		    
+		  Case "CSV"
+		    
+		    If outputCSV = "" Then
+		      outputCSV = name + ", " + data
+		    Else
+		      outputCSV = outputCSV + EndOfLine + name + ", " + data
+		    End If
+		    
+		  Case "JSON"
+		    
+		    If outputJSON = Nil Then
+		      outputJSON = New JSONItem
+		    End If
+		    
+		    outputJSON.Value( name ) = data
+		    
+		  Case "XML"
+		    
+		    If outputXML = Nil Then
+		      outputXML = New XmlDocument
+		      Dim root As XmlNode
+		      root = outputXML.AppendChild( outputXML.CreateElement( "Files" ) )
+		    End If
+		    
+		    Dim root As XmlNode = outputXML.Child( 0 )
+		    
+		    Dim filenode As XmlNode = root.AppendChild( outputXML.CreateElement( "File" ) )
+		    filenode.SetAttribute( "name", name )
+		    filenode.SetAttribute( "data", data )
+		    
+		  End Select
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h21
 		Private Sub ConvertFiles(SelectedOnly as Boolean = False)
 		  If Not SelectedOnly Then
@@ -296,7 +401,9 @@ End
 		      
 		      Dim s As String = mb
 		      s = EncodeBase64( s )
-		      Break
+		      
+		      AppendToOutput( lbFiles.Cell( i, 0 ), s )
+		      
 		    Next
 		    
 		  Else
@@ -320,10 +427,32 @@ End
 		    
 		    Dim s As String = mb
 		    s = EncodeBase64( s )
-		    Break
+		    
 		  End If
+		  
+		  Dim d As New SaveAsDialog
+		  
+		  d.Title = "Save Output"
+		  
 		End Sub
 	#tag EndMethod
+
+
+	#tag Property, Flags = &h21
+		Private outputCSV As String
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private outputFormat As String
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private outputJSON As JSONItem
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private outputXML As XmlDocument
+	#tag EndProperty
 
 
 #tag EndWindowCode
@@ -372,6 +501,18 @@ End
 	#tag Event
 		Sub Action()
 		  ConvertFiles( True )
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events puFormat
+	#tag Event
+		Sub Change()
+		  outputFormat = me.Text
+		End Sub
+	#tag EndEvent
+	#tag Event
+		Sub Open()
+		  outputFormat = me.Text
 		End Sub
 	#tag EndEvent
 #tag EndEvents
