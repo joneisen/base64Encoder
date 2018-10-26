@@ -23,7 +23,7 @@ Begin Window winMain
    MinWidth        =   64
    Placement       =   0
    Resizeable      =   True
-   Title           =   "Untitled"
+   Title           =   "Base64 Encoder"
    Visible         =   True
    Width           =   600
    Begin Listbox lbFiles
@@ -38,7 +38,7 @@ Begin Window winMain
       DataSource      =   ""
       DefaultRowHeight=   -1
       Enabled         =   True
-      EnableDrag      =   True
+      EnableDrag      =   False
       EnableDragReorder=   False
       GridLinesHorizontal=   0
       GridLinesVertical=   0
@@ -62,7 +62,7 @@ Begin Window winMain
       ScrollbarHorizontal=   False
       ScrollBarVertical=   True
       SelectionType   =   0
-      ShowDropIndicator=   False
+      ShowDropIndicator=   True
       TabIndex        =   0
       TabPanelIndex   =   0
       TabStop         =   True
@@ -378,6 +378,15 @@ End
 
 	#tag Method, Flags = &h21
 		Private Sub ConvertFiles(SelectedOnly as Boolean = False)
+		  If lbFiles.ListCount = 0 Then
+		    Dim errDlg As New MessageDialog
+		    errDlg.Title = "Error"
+		    errDlg.Message = "You must add at least one image file."
+		    errDlg.ActionButton.Caption = "Okay"
+		    errDlg.Icon = MessageDialog.GraphicCaution
+		    Dim b As MessageDialogButton = errDlg.ShowModalWithin( Self )
+		    Return
+		  End If
 		  If Not SelectedOnly Then
 		    
 		    For i As Integer = 0 To lbFiles.ListCount - 1
@@ -408,6 +417,16 @@ End
 		    
 		  Else
 		    
+		    If lbFiles.ListIndex = -1 Then
+		      Dim errDlg As New MessageDialog
+		      errDlg.Title = "Error"
+		      errDlg.Message = "You must select an image file to convert or convert all files."
+		      errDlg.ActionButton.Caption = "Okay"
+		      errDlg.Icon = MessageDialog.GraphicCaution
+		      Dim b As MessageDialogButton = errDlg.ShowModalWithin( Self )
+		      Return
+		    End If
+		    
 		    Dim pic As Picture = lbFiles.RowTag( lbFiles.ListIndex )
 		    Dim picFormat As String
 		    
@@ -426,7 +445,7 @@ End
 		    Dim mb As MemoryBlock = pic.GetData(picFormat)
 		    
 		    Dim s As String = mb
-		    s = EncodeBase64( s )
+		    s = EncodeBase64( s, 0 )
 		    
 		    AppendToOutput( lbFiles.Cell( lbFiles.ListIndex, 0 ), s )
 		    
@@ -439,6 +458,7 @@ End
 		  d.InitialDirectory = SpecialFolder.Desktop
 		  d.Title = "Save Output"
 		  d.PromptText = "Select save location"
+		  d.SuggestedFileName = "Base64Conversion." + outputFormat.Lowercase
 		  
 		  Dim xmlType As New FileType
 		  xmlType.Name = "text/xml"
@@ -526,15 +546,29 @@ End
 		    Do
 		      name = obj.FolderItem.Name
 		      pic = Picture.Open (obj.FolderItem)
-		      Me.AddRow( name )
-		      Me.RowTag( Me.LastIndex ) = pic
+		      If obj.FolderItem.Type = FileTypes1.bmp.Name Or obj.FolderItem.Type = FileTypes1.gif.Name Or obj.FolderItem.Type = FileTypes1.jpeg.Name Or obj.FolderItem.Type = FileTypes1.png.Name Or obj.FolderItem.Type = FileTypes1.tiff.Name Then
+		        Me.AddRow( name )
+		        Me.RowTag( Me.LastIndex ) = pic
+		      Else
+		        If lbFiles.ListCount = 0 Then
+		          Dim errDlg As New MessageDialog
+		          errDlg.Title = "Error"
+		          errDlg.Message = "Unsupported file type."
+		          errDlg.Explanation = "Please drop a PNG, JPEG, TIFF, GIF or BMP file." 
+		          errDlg.ActionButton.Caption = "Okay"
+		          errDlg.Icon = MessageDialog.GraphicCaution
+		          Dim b As MessageDialogButton = errDlg.ShowModalWithin( Self )
+		          Return
+		        End If
+		      End If
 		    Loop Until Not obj.NextItem
 		  End If
 		End Sub
 	#tag EndEvent
 	#tag Event
 		Sub Open()
-		  Me.AcceptFileDrop(FileTypes1.Folder)
+		  Me.AcceptFileDrop(FileTypes1.All)
+		  
 		End Sub
 	#tag EndEvent
 	#tag Event
@@ -547,6 +581,8 @@ End
 	#tag Event
 		Sub Action()
 		  lbFiles.DeleteAllRows
+		  imgViewer.Image = Nil
+		  imgViewer.Refresh
 		End Sub
 	#tag EndEvent
 #tag EndEvents

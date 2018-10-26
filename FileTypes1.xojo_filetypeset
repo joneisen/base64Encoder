@@ -1,12 +1,68 @@
 #tag FileTypeSet
 	#tag FileType
-		CodeName=Folder
-		Extension=
+		CodeName=png
+		Extension=.png
 		Flags=&h0
-		MacCreator=MACS
-		MacType=fold
-		Name=special/folder
-		UTI=
+		MacCreator=ogle
+		MacType=PNGf
+		Name=image/png
+		UTI=public.png
+		UTIConformsTo=public.image
+		Description=
+		MimeType=
+		Imported=True
+	#tag EndFileType
+
+	#tag FileType
+		CodeName=jpeg
+		Extension=.jfif;.jpe;.jpeg;.jpg
+		Flags=&h0
+		MacCreator=prvw
+		MacType=JPEG
+		Name=image/jpeg
+		UTI=public.jpeg
+		UTIConformsTo=public.image
+		Description=
+		MimeType=
+		Imported=True
+	#tag EndFileType
+
+	#tag FileType
+		CodeName=tiff
+		Extension=.jfx;.tif;.tiff
+		Flags=&h0
+		MacCreator=????
+		MacType=TIFF
+		Name=image/tiff
+		UTI=public.tiff
+		UTIConformsTo=
+		Description=
+		MimeType=
+		Imported=True
+	#tag EndFileType
+
+	#tag FileType
+		CodeName=gif
+		Extension=.gif
+		Flags=&h0
+		MacCreator=prvw
+		MacType=GIFf
+		Name=image/gif
+		UTI=com.compuserve.gif
+		UTIConformsTo=
+		Description=
+		MimeType=
+		Imported=True
+	#tag EndFileType
+
+	#tag FileType
+		CodeName=bmp
+		Extension=.bmp;.dib
+		Flags=&h0
+		MacCreator=ogle
+		MacType=BMPf
+		Name=image/x-bmp
+		UTI=com.microsoft.bmp
 		UTIConformsTo=
 		Description=
 		MimeType=
