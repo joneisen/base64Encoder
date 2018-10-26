@@ -347,7 +347,7 @@ End
 		    If outputCSV = "" Then
 		      outputCSV = name + ", " + data
 		    Else
-		      outputCSV = outputCSV + EndOfLine + name + ", " + data
+		      outputCSV = outputCSV + "\" + EndOfLine + name + ", " + data
 		    End If
 		    
 		  Case "JSON"
@@ -400,7 +400,7 @@ End
 		      Dim mb As MemoryBlock = pic.GetData(picFormat)
 		      
 		      Dim s As String = mb
-		      s = EncodeBase64( s )
+		      s = EncodeBase64( s, 0 )
 		      
 		      AppendToOutput( lbFiles.Cell( i, 0 ), s )
 		      
@@ -428,12 +428,72 @@ End
 		    Dim s As String = mb
 		    s = EncodeBase64( s )
 		    
+		    AppendToOutput( lbFiles.Cell( lbFiles.ListIndex, 0 ), s )
+		    
 		  End If
 		  
 		  Dim d As New SaveAsDialog
+		  Dim save As FolderItem
 		  
+		  
+		  d.InitialDirectory = SpecialFolder.Desktop
 		  d.Title = "Save Output"
+		  d.PromptText = "Select save location"
 		  
+		  Dim xmlType As New FileType
+		  xmlType.Name = "text/xml"
+		  xmlType.MacType = "XML"
+		  xmlType.Extensions = "xml"
+		  
+		  Dim csvType As New FileType
+		  csvType.Name = "CSV File (*.csv)"
+		  csvType.MacType = "TEXT"
+		  csvType.Extensions = "csv"
+		  
+		  Dim jsonType As New FileType
+		  jsonType.Name = "JSON File (*.json)"
+		  jsonType.MacType = "TEXT"
+		  jsonType.Extensions = "json"
+		  
+		  Select Case outputFormat
+		    
+		  Case "CSV"
+		    d.Filter = csvType
+		  Case "XML"
+		    d.Filter = xmlType
+		  Case "JSON"
+		    d.Filter = jsonType
+		  End Select
+		  
+		  save = d.ShowModal
+		  
+		  If Lowercase( Right( save.Name, 3 ) ) = "csv" Then
+		    Dim file As TextOutputStream = TextOutputStream.Create( save )
+		    file.Write( outputCSV )
+		    file.Close
+		  Elseif Lowercase( Right( save.Name, 3 ) ) = "xml" Then
+		    
+		    outputXML.SaveXml( save )
+		    
+		  Elseif Lowercase( Right( save.Name, 4 ) ) = "json" Then
+		    
+		    Dim file As TextOutputStream = TextOutputStream.Create( save )
+		    file.Write( outputJSON.ToString )
+		    file.Close
+		    
+		  Else
+		    //Error
+		  End If
+		  
+		  If outputCSV <> "" Then
+		    outputCSV = ""
+		  End If
+		  If outputXML <> Nil Then
+		    outputXML = New XmlDocument
+		  End If
+		  If outputJSON <> Nil Then
+		    outputjson.Clear
+		  End If
 		End Sub
 	#tag EndMethod
 
